@@ -1,22 +1,54 @@
-/* --- Global & Layout --- */
-.container {
-  min-height: 100vh;
-  background-color: #F4F6F8;
-  /* Soft, dull off-white to prevent eye strain */
-  color: #2D3748;
-  /* Dark slate for high contrast readability */
-  font-family: system-ui, -apple-system, sans-serif;
-  display: flex;
+/* 1. The Master Reset: Kills the weird browser padding and enforces the clean font */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* --- Login Screen --- */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+nextjs-portal {
+  display: none !important;
+}
+
 .loginWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  width: 100vw;
   background-color: #F4F6F8;
-  padding: 1rem;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #FFFFFF;
+  border-right: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+}
+
+.container {
+  min-height: 100vh;
+  background-color: #F4F6F8;
+  color: #2D3748;
+  display: flex;
 }
 
 .loginCard {

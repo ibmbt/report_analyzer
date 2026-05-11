@@ -3,8 +3,10 @@ import os
 import json
 import pytesseract
 from PIL import Image
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from pypdf import PdfReader
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from supabase import create_client, Client
 from groq import Groq
 from dotenv import load_dotenv
@@ -24,22 +26,31 @@ app.add_middleware(
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+class ChatRequest(BaseModel):
+    question: str
+    context: str
 
 @app.get("/")
 def health_check():
-    return {"status": "Processing Layer is active and clean."}
+    return {"status": "Processing Layer Active"}
 
 @app.post("/api/analyze")
 async def analyze_report(
     report: UploadFile = File(...),
-    user_id: str = Form(...), 
+    user_id: str = Form(...) 
 ):
     try:
-        image_bytes = await report.read()
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        raw_text = pytesseract.image_to_string(image)
+        file_bytes = await report.read()
+        filename = report.filename.lower()
+        
+        if filename.endswith(".pdf"):
+            reader = PdfReader(io.BytesIO(file_bytes))
+            raw_text = "\n".join([page.extract_text() or "" for page in reader.pages])
+        else:
+            image = Image.open(io.BytesIO(file_bytes)).convert("RGB")
+            raw_text = pytesseract.image_to_string(image)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to read image: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to read file: {e}")
 
     prompt = f"""
     You are a medical data extractor. Extract test names and values from this report into a JSON object.
@@ -60,7 +71,7 @@ async def analyze_report(
         )
         ai_response = json.loads(chat_completion.choices[0].message.content)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI processing failed: {e}")
+        raise HTTPException(status_code=502, detail=f"AI failed: {e}")
 
     try:
         db_record = {
@@ -71,15 +82,49 @@ async def analyze_report(
         }
         supabase.table("reports").insert(db_record).execute()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database save failed: {e}")
+        raise HTTPException(status_code=500, detail=f"DB save failed: {e}")
 
+    ai_response["raw_text"] = raw_text 
     return {"status": "success", "data": ai_response}
+
+@app.post("/api/chat")
+async def chat_with_report(req: ChatRequest):
+
+    safe_context = req.context[:6000] 
+
+    prompt = f"""
+    You are a highly knowledgeable medical AI assistant. The user has uploaded a medical lab report. The raw text of their report is below.
+    
+    Your job is to explain what these metrics mean in plain, easy-to-understand English. 
+    
+    CRITICAL INSTRUCTIONS FOR BREVITY:
+    1. ZERO FLUFF: Do not use conversational filler (e.g., "I'd be happy to help", "In your case"). Start your answer immediately.
+    2. STRICT LENGTH: Keep your explanation to a maximum of 3 to 4 short sentences. Use bullet points if it makes the data easier to read.
+    3. THE FORMAT: State what the test measures, why it might be high/low, and what their specific result implies.
+    4. DISCLAIMER: Always end with exactly this single sentence, and nothing else: "*Disclaimer: I am an AI, not a doctor. Please consult a physician.*"
+    
+    Report Text: {safe_context}
+    
+    User Question: {req.question}
+    """
+    
+    try:
+        chat_completion = groq_client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile", 
+            temperature=0.7,
+            timeout=10.0 
+        )
+        return {"answer": chat_completion.choices[0].message.content}
+    except Exception as e:
+        print(f"Chat Error: {e}") 
+        raise HTTPException(status_code=500, detail=f"Chat failed: {e}")
+    
 
 @app.get("/api/history")
 def get_history(user_id: str):
-    """Fetches all past reports for a specific user."""
     try:
         response = supabase.table("reports").select("*").eq("user_id", user_id).order("report_date", desc=True).execute()
         return {"status": "success", "data": response.data}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"History fetch failed: {e}")
