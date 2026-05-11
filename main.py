@@ -74,3 +74,12 @@ async def analyze_report(
         raise HTTPException(status_code=500, detail=f"Database save failed: {e}")
 
     return {"status": "success", "data": ai_response}
+
+@app.get("/api/history")
+def get_history(user_id: str):
+    """Fetches all past reports for a specific user."""
+    try:
+        response = supabase.table("reports").select("*").eq("user_id", user_id).order("report_date", desc=True).execute()
+        return {"status": "success", "data": response.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch history: {str(e)}")
