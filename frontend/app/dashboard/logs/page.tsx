@@ -22,7 +22,7 @@ export default function LogsPage() {
     const fetchHistory = async (userId: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/history?user_id=${userId}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history?user_id=${userId}`);
             const data = await res.json();
             if (data.status === "success") setHistoryData(data.data);
         } catch (error) {
