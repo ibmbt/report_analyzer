@@ -1,17 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { UploadCloud, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { UploadCloud, Loader2, LogOut } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase Client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Home() {
+  // --- Auth State ---
+  const [session, setSession] = useState<any>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  // --- App State ---
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // --- Auth Functions ---
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) setAuthError(error.message);
+    setAuthLoading(false);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setAuthError(error.message);
+    setAuthLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setResult(null);
+    setFile(null);
+  };
+
+  // --- Upload Function ---
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !session) return;
 
     setLoading(true);
     setError("");
@@ -19,9 +74,10 @@ export default function Home() {
 
     const formData = new FormData();
     formData.append("report", file);
+    // We will send the user's real ID to the backend!
+    formData.append("user_id", session.user.id);
 
     try {
-      // Sending the file to your FastAPI backend
       const res = await fetch("http://127.0.0.1:8000/api/analyze", {
         method: "POST",
         body: formData,
@@ -38,17 +94,77 @@ export default function Home() {
     }
   };
 
+
+  if (!session) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
+          <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">Medical Report Analyzer</h1>
+          <form className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            {authError && <p className="text-sm text-red-500 font-medium">{authError}</p>}
+
+            <div className="flex gap-4 pt-2">
+              <button
+                onClick={handleSignIn}
+                disabled={authLoading}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-300"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={handleSignUp}
+                disabled={authLoading}
+                className="flex-1 bg-white text-blue-600 border border-blue-600 py-2 rounded-lg font-medium hover:bg-blue-50 disabled:text-blue-300 disabled:border-blue-300"
+              >
+                Sign Up
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-3xl mx-auto space-y-8">
 
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Medical Report Analyzer</h1>
-          <p className="mt-2 text-gray-600">Upload your lab results for a simple, AI-powered explanation.</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Medical Report Analyzer</h1>
+            <p className="mt-1 text-sm text-gray-600">Logged in as {session.user.email}</p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-4 py-2 rounded-lg"
+          >
+            <LogOut className="h-4 w-4 mr-2" /> Sign Out
+          </button>
         </div>
 
-        {/* Upload Card */}
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
           <form onSubmit={handleUpload} className="flex flex-col items-center space-y-6">
             <div className="w-full flex justify-center border-2 border-dashed border-gray-300 rounded-lg p-12 hover:bg-gray-50 transition">
@@ -78,7 +194,6 @@ export default function Home() {
           {error && <p className="mt-4 text-red-500 text-center font-medium">{error}</p>}
         </div>
 
-        {/* Results Section */}
         {result && (
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6 animate-in fade-in slide-in-from-bottom-4">
             <div>
