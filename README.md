@@ -189,3 +189,41 @@ Tips:
 * Chat for the current session is kept in the browser until you upload a new report.
 
 ---
+### 5.3 View health timeline (trends)
+
+Navigation: Sidebar → Timeline
+
+1. Open Health Trends.  
+2. If you have uploaded at least one report before, a line chart shows how numeric metrics change across report dates.  
+3. Use Filter Metric to:  
+   * Show All Metrics — multiple lines on one chart  
+   * Select a single test — focus on one biomarker  
+4. Hover over the chart to see exact values and dates.
+
+If the chart is empty:
+
+* Upload at least one report from the Dashboard.  
+* The chart only plots numeric values; text-only fields may not appear.
+
+---
+
+### 5.4 View report history (audit logs)
+
+Navigation: Sidebar → History
+
+1. Open Audit Logs to see every report processed for your account.  
+2. The table shows:  
+   * Date — when the report was saved  
+   * AI Summary — short explanation from that session  
+   * Extracted Raw Data — JSON of test name/value pairs  
+3. Use this page to review past analyses without re-uploading files.
+
+---
+
+### 5.5 Sign out
+
+1. In the sidebar footer, confirm your email is shown.  
+2. Click Sign Out.  
+3. You return to the login page. Your stored reports remain linked to your account in the database.
+
+---
