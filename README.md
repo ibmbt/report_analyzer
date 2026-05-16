@@ -39,3 +39,46 @@
 ```bash
 git clone https://github.com/ibmbt/report_analyzer.git
 cd report_analyzer
+```
+### 3.2 Install Tesseract OCR (for image uploads)
+
+**Ubuntu / Debian:**
+```bash
+sudo apt update
+sudo apt install tesseract-ocr
+```
+
+**macOS (Homebrew):**
+```bash
+brew install tesseract
+```
+
+**Windows:**  
+Download and install from the [Tesseract GitHub releases](https://github.com/UB-Mannheim/tesseract/wiki), then ensure `tesseract` is on your system PATH.
+
+### 3.3 Backend setup (FastAPI)
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install fastapi uvicorn python-multipart python-dotenv
+pip install pytesseract pillow pypdf pydantic supabase groq
+```
+
+Create `backend/.env`:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_supabase_service_role_or_secret_key
+GROQ_API_KEY=your_groq_api_key
+```
+
+Start the API server:
+
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Verify it is running by opening: `http://localhost:8000`  
+You should see: `{"status": "Processing Layer Active"}`
