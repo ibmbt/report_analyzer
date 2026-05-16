@@ -141,3 +141,51 @@ Backend: Run uvicorn main:app \--host 0.0.0.0 \--port 8000 on your server and se
 4. After login, you are taken to the Dashboard with the sidebar: Dashboard, Timeline, and History.
 
 ---
+## 5\. Feature Walkthrough
+
+### 5.1 Upload and analyze a medical report
+
+Navigation: Dashboard → Overview
+
+1. Under Analyze New Report, click the upload area (Click to select Image or PDF).  
+2. Choose a lab report file (.pdf, .jpg, .png, or similar).  
+3. Confirm the file name appears below the upload box.  
+4. Click Extract Data.  
+5. Wait while the system:  
+   * Extracts text (PDF parsing or OCR for images)  
+   * Uses AI to identify test names and values  
+   * Generates a short summary  
+   * Saves the result to your account history
+
+What you see after processing:
+
+* Latest Analysis — AI summary in simple English  
+* Metric cards — each extracted test name and value  
+* Standard References table — common normal ranges (Heart Rate, Blood Pressure, Fasting Sugar, Hemoglobin) for quick comparison
+
+If upload fails:
+
+* Ensure the backend is running (NEXT\_PUBLIC\_API\_URL must be correct).  
+* Use a clear, readable scan or photo for image files.  
+* Supported formats: images and PDF only.
+
+---
+
+### 5.2 Ask AI about your report
+
+Navigation: Dashboard → Overview (after a successful upload)
+
+1. Scroll to Ask about this report.  
+2. Type a question related to your report, for example:  
+   * *"What does my hemoglobin mean?"*  
+   * *"Is my fasting sugar high?"*  
+3. Press Send (or submit the form).  
+4. Read the AI reply in the chat area. Each answer ends with a medical disclaimer reminding you to consult a physician.
+
+Tips:
+
+* Questions work best when they refer to tests in your uploaded report.  
+* The assistant uses the text from your current report only.  
+* Chat for the current session is kept in the browser until you upload a new report.
+
+---
