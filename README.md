@@ -227,3 +227,18 @@ Navigation: Sidebar → History
 3. You return to the login page. Your stored reports remain linked to your account in the database.
 
 ---
+
+## 6\. How the system works (brief overview)
+
+The application uses a layered architecture:
+
+| Layer | Technology | Role |
+| :---- | :---- | :---- |
+| Presentation | Next.js (React) | Login, upload UI, charts, chat |
+| Processing | FastAPI \+ Tesseract \+ Groq AI | OCR, extraction, summaries, Q\&A |
+| Data | Supabase (PostgreSQL \+ Auth) | User accounts and report history |
+
+Typical flow: Upload → OCR/text extraction → AI structures metrics → Results saved → Timeline and History read stored data.
+
+---
+
