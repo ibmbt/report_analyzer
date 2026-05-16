@@ -70,8 +70,8 @@ Create `backend/.env`:
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_supabase_service_role_or_secret_key
-GROQ_API_KEY=your_groq_api_key
+SUPABASE_KEY=butt bhai idhar bhi key plej
+GROQ_API_KEY=butt bhai api daal dena idhar
 ```
 
 Start the API server:
@@ -131,5 +131,13 @@ npm run build
 npm start
 
 Backend: Run uvicorn main:app \--host 0.0.0.0 \--port 8000 on your server and set NEXT\_PUBLIC\_API\_URL to your deployed API URL.
+
+---
+## 4\. Getting Started (First-Time User)
+
+1. Open the application URL in your browser.  
+2. On the login screen, enter your email and password.  
+3. Click Sign Up to create a new account, or Sign In if you already have one.  
+4. After login, you are taken to the Dashboard with the sidebar: Dashboard, Timeline, and History.
 
 ---
