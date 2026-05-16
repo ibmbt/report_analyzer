@@ -82,3 +82,54 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 Verify it is running by opening: `http://localhost:8000`  
 You should see: `{"status": "Processing Layer Active"}`
+
+### 3.4 Supabase database setup
+
+In your Supabase project, create a table named reports with at least these columns:
+
+| Column | Type | Notes |
+| :---- | :---- | :---- |
+| id | uuid (primary key) | Auto-generated |
+| user\_id | text / uuid | Links report to logged-in user |
+| extracted\_metrics | jsonb | Key–value pairs of test results |
+| ai\_summary | text | Short plain-English summary |
+| raw\_ocr\_text | text | Raw text extracted from the file |
+| report\_date | timestamptz | Default: now() |
+
+Enable Email/Password authentication under Authentication → Providers in the Supabase dashboard.
+
+### 3.5 Frontend setup (Next.js)
+
+Open a new terminal:
+
+cd frontend
+
+npm install
+
+Create frontend/.env.local:
+
+NEXT\_PUBLIC\_SUPABASE\_URL=https://your-project.supabase.co
+
+NEXT\_PUBLIC\_SUPABASE\_ANON\_KEY=your\_supabase\_anon\_public\_key
+
+NEXT\_PUBLIC\_API\_URL=http://localhost:8000
+
+Start the web app:
+
+npm run dev
+
+Open the application in your browser: [http://localhost:3000](http://localhost:3000/)
+
+### 3.6 Production build (optional)
+
+Frontend:
+
+cd frontend
+
+npm run build
+
+npm start
+
+Backend: Run uvicorn main:app \--host 0.0.0.0 \--port 8000 on your server and set NEXT\_PUBLIC\_API\_URL to your deployed API URL.
+
+---
