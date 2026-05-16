@@ -1,5 +1,4 @@
 # Medical Report Timeline Analyzer 
-# User Manual
 
 **Course:** Software Engineering (Semester Project) 
 
@@ -8,6 +7,7 @@
 - Ibrahim Butt (bscs24043)
 - Jaffar Kazmi (bscs24139)
 
+# User Manual
 ---
 ## 1. Introduction
 **Medical Report Timeline Analyzer** (MedAnalyzer) helps patient's caretaker understand laboratory reports without medical training. You can:
