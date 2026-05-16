@@ -242,3 +242,15 @@ Typical flow: Upload → OCR/text extraction → AI structures metrics → Resul
 
 ---
 
+## 7\. Troubleshooting
+
+| Problem | Possible solution |
+| :---- | :---- |
+| "Upload failed. Make sure Python is running." | Start the backend with uvicorn main:app \--reload \--port 8000 and check NEXT\_PUBLIC\_API\_URL. |
+| Login or sign-up errors | Verify Supabase URL and anon key in frontend/.env.local; enable Email auth in Supabase. |
+| Image upload returns poor or empty text | Use a sharper scan; ensure Tesseract is installed on the server/machine running the backend. |
+| Timeline shows no data | Upload at least one report while signed in; refresh the Timeline page. |
+| AI chat does not respond | Check GROQ\_API\_KEY in backend/.env and internet connectivity. |
+| History is empty | Complete a successful analysis on the Dashboard first. |
+
+---
