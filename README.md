@@ -254,3 +254,20 @@ Typical flow: Upload → OCR/text extraction → AI structures metrics → Resul
 | History is empty | Complete a successful analysis on the Dashboard first. |
 
 ---
+
+## 8\. Privacy and data
+
+* Reports are stored in Supabase and associated with your user ID so you can view timeline and history.  
+* Do not share your account credentials.  
+* For demos or evaluation, use sample or anonymized reports when possible.
+
+---
+
+## 9\. Limitations
+
+* Does not provide medical diagnosis or treatment advice.  
+* Accuracy depends on report quality, OCR clarity, and AI interpretation.  
+* Reference ranges shown on the Dashboard are general guides, not personalized clinical thresholds.  
+* Processing time may exceed a few seconds for large PDFs or slow networks.
+
+---
