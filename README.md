@@ -100,7 +100,7 @@ Enable Email/Password authentication under Authentication → Providers in the S
 
 ### 3.5 Frontend setup (Next.js)
 
-Open a new terminal:
+Open a new terminal and run the following commands : 
 
 cd frontend
 
