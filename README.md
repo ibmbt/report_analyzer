@@ -199,7 +199,8 @@ Navigation: Sidebar → Timeline
    * Show All Metrics — multiple lines on one chart  
    * Select a single test — focus on one biomarker  
 4. Hover over the chart to see exact values and dates.
-
+5. Graph will be plotted connecting all the data points.
+   
 If the chart is empty:
 
 * Upload at least one report from the Dashboard.  
