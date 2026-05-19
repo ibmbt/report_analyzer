@@ -178,9 +178,10 @@ Navigation: Dashboard → Overview (after a successful upload)
 1. Scroll to Ask about this report.  
 2. Type a question related to your report, for example:  
    * *"What does my hemoglobin mean?"*  
-   * *"Is my fasting sugar high?"*  
-3. Press Send (or submit the form).  
-4. Read the AI reply in the chat area. Each answer ends with a medical disclaimer reminding you to consult a physician.
+   * *"Is my fasting sugar high?"*
+3. Multilingual Text-to-Speech Support: Integrated an accessibility-focused text-to-speech feature that allows users to listen to AI-generated responses in both English and Urdu, improving usability for users with limited reading proficiency or visual difficulties.
+4. Press Send (or submit the form).  
+5. Read the AI reply in the chat area. Each answer ends with a medical disclaimer reminding you to consult a physician.
 
 Tips:
 
