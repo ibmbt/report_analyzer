@@ -22,8 +22,9 @@ export default function DashboardHome() {
     const [result, setResult] = useState<any>(null);
     const [userId, setUserId] = useState<string | null>(null);
 
+    const [chatLanguage, setChatLanguage] = useState("English");
     const [chatMessage, setChatMessage] = useState("");
-    const [chatHistory, setChatHistory] = useState<{ role: string, text: string }[]>([]);
+    const [chatHistory, setChatHistory] = useState<{ role: string, content: string }[]>([]);
     const [chatLoading, setChatLoading] = useState(false);
 
     useEffect(() => {
@@ -40,6 +41,19 @@ export default function DashboardHome() {
             sessionStorage.setItem("currentChat", JSON.stringify(chatHistory));
         }
     }, [chatHistory]);
+
+    const speakText = (text: string) => {
+        if (!window.speechSynthesis) {
+            alert("Your browser does not support audio output.");
+            return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const isUrdu = /[\u0600-\u06FF]/.test(text);
+        utterance.lang = isUrdu ? 'ur-PK' : 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    };
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -73,19 +87,27 @@ export default function DashboardHome() {
 
         const userQuestion = chatMessage;
         setChatMessage("");
-        setChatHistory(prev => [...prev, { role: "user", text: userQuestion }]);
+
+        const newUserMsg = { role: "user", content: userQuestion };
+        const updatedHistory = [...chatHistory, newUserMsg];
+
+        setChatHistory(updatedHistory);
         setChatLoading(true);
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question: userQuestion, context: result.raw_text })
+                body: JSON.stringify({
+                    messages: updatedHistory,
+                    context: result.raw_text,
+                    language: chatLanguage
+                })
             });
             const data = await res.json();
-            setChatHistory(prev => [...prev, { role: "ai", text: data.answer }]);
+            setChatHistory([...updatedHistory, { role: "assistant", content: data.answer }]);
         } catch (err) {
-            setChatHistory(prev => [...prev, { role: "ai", text: "Sorry, I couldn't process that right now." }]);
+            setChatHistory([...updatedHistory, { role: "assistant", content: "Sorry, I couldn't process that right now." }]);
         } finally {
             setChatLoading(false);
         }
@@ -156,19 +178,37 @@ export default function DashboardHome() {
                                         color: msg.role === "user" ? '#FFF' : '#2D3748',
                                         padding: '12px 16px', borderRadius: '12px', lineHeight: 1.5
                                     }}>
-                                        {msg.text}
+                                        {msg.content}
                                     </div>
+                                    {msg.role === "assistant" && (
+                                        <button
+                                            onClick={() => speakText(msg.content)}
+                                            style={{ marginTop: '8px', fontSize: '12px', color: '#4A90E2', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', fontWeight: 'bold' }}
+                                        >
+                                            🔊 Play Audio
+                                        </button>
+                                    )}
                                 </div>
                             ))}
+
                             {chatLoading && <div style={{ alignSelf: 'flex-start', backgroundColor: '#F4F6F8', padding: '12px 16px', borderRadius: '12px' }}><Loader2 className="animate-spin" size={20} color="#4A90E2" /></div>}
                         </div>
 
                         <form onSubmit={handleChatSubmit} style={{ display: 'flex', gap: '8px' }}>
+                            <select
+                                value={chatLanguage}
+                                onChange={(e) => setChatLanguage(e.target.value)}
+                                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E0', outline: 'none', backgroundColor: '#fff' }}
+                            >
+                                <option value="English">English</option>
+                                <option value="Urdu">اردو (Urdu)</option>
+                            </select>
+
                             <input
                                 type="text"
                                 value={chatMessage}
                                 onChange={(e) => setChatMessage(e.target.value)}
-                                placeholder="Ask your AI assistant..."
+                                placeholder={`Ask in ${chatLanguage}...`}
                                 style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E0', outline: 'none' }}
                             />
                             <button type="submit" disabled={chatLoading || !chatMessage.trim()} style={{ backgroundColor: '#4A90E2', color: '#FFF', padding: '0 20px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>

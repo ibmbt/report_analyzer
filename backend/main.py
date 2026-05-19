@@ -10,10 +10,21 @@ from pydantic import BaseModel
 from supabase import create_client, Client
 from groq import Groq
 from dotenv import load_dotenv
+from pydantic import BaseModel
+from typing import List
 
 load_dotenv()
 
 app = FastAPI(title="Medical Report Analyzer API")
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[Message]
+    context: str
+    language: str = "English" 
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,9 +37,6 @@ app.add_middleware(
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-class ChatRequest(BaseModel):
-    question: str
-    context: str
 
 @app.get("/")
 def health_check():
@@ -89,28 +97,31 @@ async def analyze_report(
 
 @app.post("/api/chat")
 async def chat_with_report(req: ChatRequest):
-
     safe_context = req.context[:6000] 
 
-    prompt = f"""
+    system_prompt = f"""
     You are a highly knowledgeable medical AI assistant. The user has uploaded a medical lab report. The raw text of their report is below.
     
-    Your job is to explain what these metrics mean in plain, easy-to-understand English. 
+    Your job is to explain what these metrics mean in plain, easy-to-understand {req.language}. 
+    If the language is Urdu, YOU MUST USE ACTUAL URDU SCRIPT (Nastaliq), do NOT use Roman Urdu.
     
     CRITICAL INSTRUCTIONS FOR BREVITY:
-    1. ZERO FLUFF: Do not use conversational filler (e.g., "I'd be happy to help", "In your case"). Start your answer immediately.
-    2. STRICT LENGTH: Keep your explanation to a maximum of 3 to 4 short sentences. Use bullet points if it makes the data easier to read.
+    1. ZERO FLUFF: Start your answer immediately.
+    2. STRICT LENGTH: Keep your explanation to a maximum of 3 to 4 short sentences.
     3. THE FORMAT: State what the test measures, why it might be high/low, and what their specific result implies.
-    4. DISCLAIMER: Always end with exactly this single sentence, and nothing else: "*Disclaimer: I am an AI, not a doctor. Please consult a physician.*"
+    4. DISCLAIMER: Always end with a short disclaimer in {req.language} stating you are an AI, not a doctor.
     
     Report Text: {safe_context}
-    
-    User Question: {req.question}
     """
+    
+    groq_messages = [{"role": "system", "content": system_prompt}]
+    
+    for msg in req.messages:
+        groq_messages.append({"role": msg.role, "content": msg.content})
     
     try:
         chat_completion = groq_client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
+            messages=groq_messages,
             model="llama-3.3-70b-versatile", 
             temperature=0.7,
             timeout=10.0 
